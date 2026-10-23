@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0D2E26">
+<title>Smart Expense Analyzer | Krishna Sharma</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg: #0D2E26;
+  --surface: #103D32;
+  --surface-alt: #0a261f;
+  --cream: #F5E9D5;
+  --beige: #D8B99A;
+  --sage: #83A987;
+  --emerald: #075747;
+  --line: rgba(245, 233, 213, 0.14);
+  --terra: #895440;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.wrap {
+  width: min(1080px, 100% - clamp(20px, 5vw, 44px));
+  margin-inline: auto;
+}
+
+/* Header */
+header {
+  border-bottom: 1px solid var(--line);
+  padding: clamp(26px, 5vw, 44px) 0;
+  text-align: center;
+}
+header h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(34px, 7vw, 54px);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--cream);
+}
+header h1 em {
+  color: var(--beige);
+  font-style: normal;
+}
+header p {
+  color: var(--sage);
+  font-size: clamp(12px, 3.5vw, 14px);
+  margin-top: 6px;
+}
+
+/* Top Summary KPIs */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  text-align: center;
+}
+.kpi small {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--sage);
+  font-weight: 700;
+}
+.kpi strong {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(24px, 5vw, 32px);
+  color: var(--beige);
+  display: block;
+  margin-top: 4px;
+}
+
+/* Main Layout Grid */
+.layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr));
+  gap: clamp(14px, 3vw, 22px);
+  padding: clamp(20px, 4vw, 36px) 0;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: clamp(16px, 4vw, 22px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.card h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(22px, 5vw, 26px);
+  color: var(--beige);
+}
+.card p {
+  font-size: 12px;
+  color: #c7d5cd;
+}
+
+/* Form Styles */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--sage);
+  font-weight: 700;
+}
+input, select {
+  background: var(--surface-alt);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 11px 13px;
+  color: var(--cream);
+  font-size: 16px; /* Prevents auto-zoom on mobile */
+  outline: none;
+}
+input:focus, select:focus {
+  border-color: var(--sage);
+}
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+button {
+  background: var(--emerald);
+  color: var(--cream);
+  border: 1px solid var(--sage);
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all .15s ease;
+  min-height: 44px;
+}
+button:hover {
+  background: #0b6b58;
+}
+button:active {
+  transform: scale(0.97);
+}
+
+/* Charts Section */
+.chart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: 6px;
+}
+.donut-wrap {
+  position: relative;
+  width: 170px;
+  height: 170px;
+}
+svg.donut {
+  transform: rotate(-90deg);
+  border-radius: 50%;
+}
+.donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.donut-center span {
+  font-size: 10px;
+  color: var(--sage);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.donut-center b {
+  font-size: 18px;
+  color: var(--beige);
+  font-family: monospace;
+}
+
+/* Bar Breakdown List */
+.bars {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.bar-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+.bar-meta span:first-child {
+  color: var(--cream);
+}
+.bar-meta span:last-child {
+  color: var(--beige);
+  font-family: monospace;
+}
+.bar-track {
+  height: 8px;
+  background: var(--surface-alt);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.3s ease;
+}
+
+/* Ledger List */
+.ledger-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.filter-select {
+  padding: 6px 10px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+.ledger-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface-alt);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 14px;
+  gap: 10px;
+}
+.item-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.item-title {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.item-tag {
+  font-size: 10px;
+  color: var(--sage);
+  text-transform: uppercase;
+}
+.item-amt-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.item-amt {
+  font-family: monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--beige);
+}
+.del-btn {
+  background: transparent;
+  border: none;
+  color: #c97d6d;
+  font-size: 16px;
+  padding: 4px 6px;
+  min-height: unset;
+}
+.del-btn:hover {
+  color: #ff6b6b;
+  background: transparent;
+}
+
+/* Empty State */
+.empty-msg {
+  text-align: center;
+  color: var(--sage);
+  font-size: 13px;
+  padding: 30px 0;
+}
+
+/* Footer */
+footer {
+  border-top: 1px solid var(--line);
+  padding: 22px 0;
+  text-align: center;
+  font-size: clamp(11px, 3vw, 12px);
+  color: var(--sage);
+  margin-top: auto;
+}
+
+@media (max-width: 480px) {
+  .input-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>Smart Expense <em>Analyzer</em></h1>
+    <p>Krishna Sharma — Real-time spending analysis, categorical metrics & visual charts</p>
+    
+    <div class="kpi-row">
+      <div class="kpi">
+        <small>Total Spending</small>
+        <strong id="stat-total">$0.00</strong>
+      </div>
+      <div class="kpi">
+        <small>Total Entries</small>
+        <strong id="stat-count">0</strong>
+      </div>
+      <div class="kpi">
+        <small>Average Spend</small>
+        <strong id="stat-avg">$0.00</strong>
+      </div>
+      <div class="kpi">
+        <small>Top Category</small>
+        <strong id="stat-top">—</strong>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="layout">
+    
+    <!-- Panel 1: Expense Input Form -->
+    <article class="card">
+      <h2>Record Expense</h2>
+      <p>Log a new transaction with automatic categorization.</p>
+
+      <form id="expense-form" onsubmit="addExpense(event)">
+        <div class="form-group">
+          <label class="label">Description</label>
+          <input type="text" id="desc" placeholder="e.g. Grocery, Rent, Cloud Server" required>
+        </div>
+
+        <div class="input-row" style="margin-top: 10px;">
+          <div class="form-group">
+            <label class="label">Amount ($)</label>
+            <input type="number" id="amount" step="0.01" min="0.01" placeholder="0.00" required>
+          </div>
+          <div class="form-group">
+            <label class="label">Category</label>
+            <select id="category">
+              <option value="Food">Food & Dining</option>
+              <option value="Housing">Housing & Rent</option>
+              <option value="Transport">Transportation</option>
+              <option value="Utilities">Utilities & Bills</option>
+              <option value="Leisure">Entertainment</option>
+              <option value="Health">Healthcare</option>
+              <option value="Other">Miscellaneous</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" style="width: 100%; margin-top: 14px;">+ Log Expense</button>
+      </form>
+
+      <div style="margin-top: 8px; display: flex; gap: 8px;">
+        <button type="button" onclick="loadSampleData()" style="flex: 1; background: var(--surface-alt); border-color: var(--line); font-size: 12px; min-height: 38px;">Load Samples</button>
+        <button type="button" onclick="clearAllExpenses()" style="flex: 1; background: #673B2A; border-color: #895440; font-size: 12px; min-height: 38px;">Clear All</button>
+      </div>
+    </article>
+
+    <!-- Panel 2: Visual Chart & Category Distribution -->
+    <article class="card">
+      <h2>Spending Breakdown</h2>
+      <p>Categorical distribution rendered with dynamic vector ratios.</p>
+
+      <div class="chart-container">
+        <div class="donut-wrap">
+          <svg class="donut" width="170" height="170" viewBox="0 0 42 42" id="donut-svg">
+            <!-- Segments injected by JS -->
+          </svg>
+          <div class="donut-center">
+            <span>Share</span>
+            <b id="donut-center-val">100%</b>
+          </div>
+        </div>
+
+        <div class="bars" id="category-bars">
+          <!-- Dynamic category progress bars injected by JS -->
+        </div>
+      </div>
+    </article>
+
+    <!-- Panel 3: Filterable Transaction Ledger -->
+    <article class="card">
+      <div class="ledger-header">
+        <div>
+          <h2>Expense Ledger</h2>
+          <p>Auditable itemized log.</p>
+        </div>
+        <select id="filter-cat" class="filter-select" onchange="render()">
+          <option value="ALL">All Categories</option>
+          <option value="Food">Food & Dining</option>
+          <option value="Housing">Housing</option>
+          <option value="Transport">Transport</option>
+          <option value="Utilities">Utilities</option>
+          <option value="Leisure">Entertainment</option>
+          <option value="Health">Healthcare</option>
+          <option value="Other">Miscellaneous</option>
+        </select>
+      </div>
+
+      <div class="ledger-list" id="ledger-list">
+        <!-- Expense items injected here -->
+      </div>
+    </article>
+
+  </div>
+</main>
+
+<footer>
+  <p>&copy; Krishna Sharma — Smart Expense Analyzer</p>
+</footer>
+
+<script>
+// Category color mapping
+const CATEGORY_COLORS = {
+  'Food': '#D8B99A',       // Warm beige
+  'Housing': '#83A987',    // Sage green
+  'Transport': '#E59866',  // Terracotta
+  'Utilities': '#73C6B6',  // Seafoam
+  'Leisure': '#F7DC6F',    // Gold
+  'Health': '#E77F67',     // Coral
+  'Other': '#A2D9CE'       // Mint
+};
+
+// Initial state with realistic samples
+let expenses = [
+  { id: 1, desc: 'Apartment Lease', amount: 950.00, category: 'Housing', date: 'Oct 01' },
+  { id: 2, desc: 'Whole Foods Market', amount: 142.50, category: 'Food', date: 'Oct 03' },
+  { id: 3, desc: 'Metro Card Pass', amount: 65.00, category: 'Transport', date: 'Oct 05' },
+  { id: 4, desc: 'Fiber Internet & Power', amount: 110.20, category: 'Utilities', date: 'Oct 07' },
+  { id: 5, desc: 'Concert Ticket', amount: 45.00, category: 'Leisure', date: 'Oct 09' }
+];
+
+function formatCurrency(num) {
+  return '$' + Number(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// Add Expense
+function addExpense(e) {
+  e.preventDefault();
+  const desc = document.getElementById('desc').value.trim();
+  const amount = parseFloat(document.getElementById('amount').value);
+  const category = document.getElementById('category').value;
+
+  if (!desc || isNaN(amount) || amount <= 0) return;
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
+
+  expenses.unshift({
+    id: Date.now(),
+    desc,
+    amount,
+    category,
+    date: dateStr
+  });
+
+  document.getElementById('expense-form').reset();
+  render();
+}
+
+// Delete item
+function deleteExpense(id) {
+  expenses = expenses.filter(item => item.id !== id);
+  render();
+}
+
+// Reset sample data
+function loadSampleData() {
+  expenses = [
+    { id: 1, desc: 'Apartment Lease', amount: 950.00, category: 'Housing', date: 'Oct 01' },
+    { id: 2, desc: 'Whole Foods Market', amount: 142.50, category: 'Food', date: 'Oct 03' },
+    { id: 3, desc: 'Metro Card Pass', amount: 65.00, category: 'Transport', date: 'Oct 05' },
+    { id: 4, desc: 'Fiber Internet & Power', amount: 110.20, category: 'Utilities', date: 'Oct 07' },
+    { id: 5, desc: 'Concert Ticket', amount: 45.00, category: 'Leisure', date: 'Oct 09' }
+  ];
+  render();
+}
+
+function clearAllExpenses() {
+  if (confirm('Clear all recorded expenses?')) {
+    expenses = [];
+    render();
+  }
+}
+
+// Compute Statistics and Render UI
+function render() {
+  const filterCat = document.getElementById('filter-cat').value;
+  const filtered = filterCat === 'ALL' ? expenses : expenses.filter(x => x.category === filterCat);
+
+  // Totals calculations
+  const total = expenses.reduce((sum, item) => sum + item.amount, 0);
+  const count = expenses.length;
+  const avg = count > 0 ? (total / count) : 0;
+
+  // Category aggregates
+  const catTotals = {};
+  for (const item of expenses) {
+    catTotals[item.category] = (catTotals[item.category] || 0) + item.amount;
+  }
+
+  // Top category
+  let topCat = '—';
+  let maxCatTotal = 0;
+  for (const [cat, sum] of Object.entries(catTotals)) {
+    if (sum > maxCatTotal) {
+      maxCatTotal = sum;
+      topCat = cat;
+    }
+  }
+
+  // Update Header KPIs
+  document.getElementById('stat-total').textContent = formatCurrency(total);
+  document.getElementById('stat-count').textContent = count;
+  document.getElementById('stat-avg').textContent = formatCurrency(avg);
+  document.getElementById('stat-top').textContent = topCat;
+
+  // Render Donut Chart (SVG 42x42 coordinate system with circumference = 100)
+  const donutSvg = document.getElementById('donut-svg');
+  donutSvg.innerHTML = '';
+  
+  if (total === 0) {
+    donutSvg.innerHTML = `<circle cx="21" cy="21" r="15.915" fill="transparent" stroke="rgba(245,233,213,0.1)" stroke-width="4"></circle>`;
+    document.getElementById('donut-center-val').textContent = '0%';
+  } else {
+    let accumulatedOffset = 0;
+    const catKeys = Object.keys(catTotals);
+
+    catKeys.forEach(cat => {
+      const share = (catTotals[cat] / total) * 100;
+      const strokeColor = CATEGORY_COLORS[cat] || '#83A987';
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      
+      circle.setAttribute('cx', '21');
+      circle.setAttribute('cy', '21');
+      circle.setAttribute('r', '15.91549430918954'); // Circumference = exactly 100
+      circle.setAttribute('fill', 'transparent');
+      circle.setAttribute('stroke', strokeColor);
+      circle.setAttribute('stroke-width', '4.5');
+      circle.setAttribute('stroke-dasharray', `${share} ${100 - share}`);
+      circle.setAttribute('stroke-dashoffset', `-${accumulatedOffset}`);
+      
+      donutSvg.appendChild(circle);
+      accumulatedOffset += share;
+    });
+
+    document.getElementById('donut-center-val').textContent = formatCurrency(total);
+  }
+
+  // Render Progress Bars
+  const barsContainer = document.getElementById('category-bars');
+  barsContainer.innerHTML = '';
+
+  const sortedCategories = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+  if (sortedCategories.length === 0) {
+    barsContainer.innerHTML = '<div class="empty-msg">No category data recorded yet.</div>';
+  } else {
+    sortedCategories.forEach(([cat, amount]) => {
+      const percent = total > 0 ? ((amount / total) * 100).toFixed(1) : 0;
+      const color = CATEGORY_COLORS[cat] || '#83A987';
+
+      const barItem = document.createElement('div');
+      barItem.className = 'bar-item';
+      barItem.innerHTML = `
+        <div class="bar-meta">
+          <span>${cat} <small style="color:var(--sage)">(${percent}%)</small></span>
+          <span>${formatCurrency(amount)}</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width: ${percent}%; background: ${color}"></div>
+        </div>
+      `;
+      barsContainer.appendChild(barItem);
+    });
+  }
+
+  // Render Ledger List
+  const listContainer = document.getElementById('ledger-list');
+  listContainer.innerHTML = '';
+
+  if (filtered.length === 0) {
+    listContainer.innerHTML = '<div class="empty-msg">No transactions found in this view.</div>';
+  } else {
+    filtered.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'item';
+      el.innerHTML = `
+        <div class="item-info">
+          <span class="item-title">${escapeHTML(item.desc)}</span>
+          <span class="item-tag">${item.category} • ${item.date}</span>
+        </div>
+        <div class="item-amt-wrap">
+          <span class="item-amt">${formatCurrency(item.amount)}</span>
+          <button class="del-btn" title="Delete entry" onclick="deleteExpense(${item.id})">✕</button>
+        </div>
+      `;
+      listContainer.appendChild(el);
+    });
+  }
+}
+
+function escapeHTML(str) {
+  return str.replace(/[&<>'"]/g, tag => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  }[tag] || tag));
+}
+
+// Initial Boot
+render();
+</script>
+</body>
+</html>
